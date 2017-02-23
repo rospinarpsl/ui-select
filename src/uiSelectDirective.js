@@ -127,6 +127,15 @@ uis.directive('uiSelect',
           }
         });
 
+         attrs.$observe('allowFree', function() {
+          if(attrs.allowFree !== undefined) {
+            var allowFreeFn = scope.$eval(attrs.allowFree);
+				if(typeof allowFreeFn !== 'undefined') {
+					$select.allowFree = {isActivated: true, fct: allowFreeFn};
+				}
+          }
+        });
+
         attrs.$observe('taggingLabel', function() {
           if(attrs.tagging !== undefined )
           {
@@ -378,7 +387,7 @@ uis.directive('uiSelect',
         };
 
         var opened = false;
-        
+
         scope.calculateDropdownPos = function() {
           if ($select.open) {
             dropdown = angular.element(element).querySelectorAll('.ui-select-dropdown');

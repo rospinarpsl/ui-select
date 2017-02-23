@@ -1,4 +1,9 @@
 <a name="0.19.5"></a>
+## [0.19.7](https://github.com/angular-ui/ui-select/compare/v0.19.5...v0.19.5) (2017-02-23)
+### Features
+* Adding support for allowing free text in the directive
+
+<a name="0.19.5"></a>
 ## [0.19.5](https://github.com/angular-ui/ui-select/compare/v0.19.5...v0.19.5) (2016-10-24)
 
 ## Reverted

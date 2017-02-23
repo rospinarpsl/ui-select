@@ -41,6 +41,7 @@ uis.controller('uiSelectCtrl',
   ctrl.disableChoiceExpression = undefined; // Initialized inside uiSelectChoices directive link function
   ctrl.tagging = {isActivated: false, fct: undefined};
   ctrl.taggingTokens = {isActivated: false, tokens: undefined};
+  ctrl.allowFree = {isActivated: false, fct: undefined}; //This will work the same way tagging does but for single select dropdowns
   ctrl.lockChoiceExpression = undefined; // Initialized inside uiSelectMatch directive link function
   ctrl.clickTriggeredSelect = false;
   ctrl.$filter = $filter;
@@ -378,20 +379,22 @@ uis.controller('uiSelectCtrl',
   ctrl.select = function(item, skipFocusser, $event) {
     if (item === undefined || !_isItemDisabled(item)) {
 
-      if ( ! ctrl.items && ! ctrl.search && ! ctrl.tagging.isActivated) return;
+      if ( ! ctrl.items && ! ctrl.search && ! ctrl.tagging.isActivated && ! ctrl.allowFree.isActivated) return;
 
       if (!item || !_isItemDisabled(item)) {
         // if click is made on existing item, prevent from tagging, ctrl.search does not matter
+		  var evtType = $event ? $event.type : '';
         ctrl.clickTriggeredSelect = false;
-        if($event && ($event.type === 'click' || $event.type === 'touchend') && item)
+        if((evtType === 'click' || evtType === 'touchend') && item)
           ctrl.clickTriggeredSelect = true;
 
-        if(ctrl.tagging.isActivated && ctrl.clickTriggeredSelect === false) {
+        if((ctrl.tagging.isActivated || ctrl.allowFree.isActivated) && ctrl.clickTriggeredSelect === false && evtType !== 'clear') {
           // if taggingLabel is disabled and item is undefined we pull from ctrl.search
-          if ( ctrl.taggingLabel === false ) {
+          if ( ctrl.taggingLabel === false || ctrl.allowFree.isActivated) {
             if ( ctrl.activeIndex < 0 ) {
               if (item === undefined) {
-                item = ctrl.tagging.fct !== undefined ? ctrl.tagging.fct(ctrl.search) : ctrl.search;
+					  var fct = ctrl.tagging.fct || ctrl.allowFree.fct;
+                item = fct !== undefined ? fct(ctrl.search) : ctrl.search;
               }
               if (!item || angular.equals( ctrl.items[0], item ) ) {
                 return;
@@ -432,7 +435,7 @@ uis.controller('uiSelectCtrl',
         if (ctrl.closeOnSelect) {
           ctrl.close(skipFocusser);
         }
-      }
+	  }
     }
   };
 
@@ -451,7 +454,8 @@ uis.controller('uiSelectCtrl',
   };
 
   ctrl.clear = function($event) {
-    ctrl.select(undefined);
+    $event.type = 'clear';
+    ctrl.select(undefined, true, $event);
     $event.stopPropagation();
     $timeout(function() {
       ctrl.focusser[0].focus();
@@ -611,31 +615,36 @@ uis.controller('uiSelectCtrl',
 
       var tagged = false;
 
-      if (ctrl.items.length > 0 || ctrl.tagging.isActivated) {
+      if (ctrl.items.length > 0 || ctrl.tagging.isActivated || ctrl.allowFree.isActivated) {
         if(!_handleDropDownSelection(key) && !ctrl.searchEnabled) {
           e.preventDefault();
           e.stopPropagation();
         }
-        if ( ctrl.taggingTokens.isActivated ) {
-          for (var i = 0; i < ctrl.taggingTokens.tokens.length; i++) {
-            if ( ctrl.taggingTokens.tokens[i] === KEY.MAP[e.keyCode] ) {
-              // make sure there is a new value to push via tagging
-              if ( ctrl.search.length > 0 ) {
-                tagged = true;
-              }
-            }
-          }
-          if ( tagged ) {
-            $timeout(function() {
-              ctrl.searchInput.triggerHandler('tagged');
-              var newItem = ctrl.search.replace(KEY.MAP[e.keyCode],'').trim();
-              if ( ctrl.tagging.fct ) {
-                newItem = ctrl.tagging.fct( newItem );
-              }
-              if (newItem) ctrl.select(newItem, true);
-            });
-          }
-        }
+		  if(ctrl.taggingTokens.isActivated) {
+			  for (var i = 0; i < ctrl.taggingTokens.tokens.length; i++) {
+				  if ( ctrl.taggingTokens.tokens[i] === KEY.MAP[e.keyCode] ) {
+					  // make sure there is a new value to push via tagging
+					  if ( ctrl.search.length > 0 ) {
+						  tagged = true;
+					  }
+				  }
+			  }
+		  } else if(ctrl.allowFree.isActivated && ctrl.search.length > 0) {
+			  if (~[KEY.ENTER, KEY.TAB].indexOf(key)){
+				  tagged = true;
+			  }
+		  }
+		  if ( tagged ) {
+			  $timeout(function() {
+				  ctrl.searchInput.triggerHandler('tagged');
+				  var newItem = ctrl.search.replace(KEY.MAP[e.keyCode],'').trim();
+				  var fct = ctrl.tagging.fct || ctrl.allowFree.fct;
+				  if ( fct ) {
+					  newItem = fct( newItem );
+				  }
+				  if (newItem) ctrl.select(newItem, true);
+			  });
+		  }
       }
 
     });

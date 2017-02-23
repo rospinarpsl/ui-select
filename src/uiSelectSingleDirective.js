@@ -34,6 +34,9 @@ uis.directive('uiSelectSingle', ['$timeout','$compile', function($timeout, $comp
           for (var i = data.length - 1; i >= 0; i--) {
             if (checkFnSingle(data[i])) return data[i];
           }
+			 if($select.allowFree.isActivated && $select.allowFree.fct) {
+				 return $select.allowFree.fct(inputValue);
+			 }
         }
         return inputValue;
       });
@@ -51,7 +54,7 @@ uis.directive('uiSelectSingle', ['$timeout','$compile', function($timeout, $comp
 
       scope.$on('uis:select', function (event, item) {
         $select.selected = item;
-        var locals = {};        
+        var locals = {};
         locals[$select.parserResult.itemName] = item;
 
         $timeout(function(){
