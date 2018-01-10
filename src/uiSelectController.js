@@ -601,6 +601,20 @@ uis.controller('uiSelectCtrl',
     return processed;
   }
 
+  ctrl.searchInput.on('blur', function() {
+		  if ( ctrl.allowFree.isActivated && ctrl.search.length > 0 ) {
+			  $timeout(function() {
+				  ctrl.searchInput.triggerHandler('tagged');
+				  var newItem = ctrl.search.trim();
+				  var fct = ctrl.tagging.fct || ctrl.allowFree.fct;
+				  if ( fct ) {
+					  newItem = fct( newItem );
+				  }
+				  if (newItem) ctrl.select(newItem, true);
+			  });
+		  }
+  });
+
   // Bind to keyboard shortcuts
   ctrl.searchInput.on('keydown', function(e) {
 

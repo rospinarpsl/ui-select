@@ -1,7 +1,7 @@
 /*!
  * ui-select
  * http://github.com/angular-ui/ui-select
- * Version: 0.19.7 - 2017-02-23T15:49:26.515Z
+ * Version: 0.19.8 - 2018-01-10T20:06:38.772Z
  * License: MIT
  */
 
@@ -897,6 +897,20 @@ uis.controller('uiSelectCtrl',
     }
     return processed;
   }
+
+  ctrl.searchInput.on('blur', function() {
+		  if ( ctrl.allowFree.isActivated && ctrl.search.length > 0 ) {
+			  $timeout(function() {
+				  ctrl.searchInput.triggerHandler('tagged');
+				  var newItem = ctrl.search.trim();
+				  var fct = ctrl.tagging.fct || ctrl.allowFree.fct;
+				  if ( fct ) {
+					  newItem = fct( newItem );
+				  }
+				  if (newItem) ctrl.select(newItem, true);
+			  });
+		  }
+  });
 
   // Bind to keyboard shortcuts
   ctrl.searchInput.on('keydown', function(e) {
