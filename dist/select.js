@@ -1,7 +1,7 @@
 /*!
  * ui-select
  * http://github.com/angular-ui/ui-select
- * Version: 0.19.8 - 2018-01-10T20:06:38.772Z
+ * Version: 0.19.9 - 2018-01-19T20:03:07.035Z
  * License: MIT
  */
 
@@ -706,7 +706,10 @@ uis.controller('uiSelectCtrl',
             if ( ctrl.activeIndex === 0 ) {
               // ctrl.tagging pushes items to ctrl.items, so we only have empty val
               // for `item` if it is a detected duplicate
-              if ( item === undefined ) return;
+              if ( item === undefined ) {
+                ctrl.close(skipFocusser);
+                return;
+              } 
 
               // create new item on the fly if we don't already have one;
               // use tagging function if we have one
@@ -880,7 +883,9 @@ uis.controller('uiSelectCtrl',
         }
         break;
       case KEY.TAB:
-        if (!ctrl.multiple || ctrl.open) ctrl.select(ctrl.items[ctrl.activeIndex], true);
+        if (!ctrl.multiple || ctrl.open) {
+          ctrl.select(ctrl.items[ctrl.activeIndex], true);
+        }
         break;
       case KEY.ENTER:
         if(ctrl.open && (ctrl.tagging.isActivated || ctrl.activeIndex >= 0)){
@@ -898,24 +903,16 @@ uis.controller('uiSelectCtrl',
     return processed;
   }
 
-  ctrl.searchInput.on('blur', function() {
-		  if ( ctrl.allowFree.isActivated && ctrl.search.length > 0 ) {
-			  $timeout(function() {
-				  ctrl.searchInput.triggerHandler('tagged');
-				  var newItem = ctrl.search.trim();
-				  var fct = ctrl.tagging.fct || ctrl.allowFree.fct;
-				  if ( fct ) {
-					  newItem = fct( newItem );
-				  }
-				  if (newItem) ctrl.select(newItem, true);
-			  });
-		  }
-  });
+  
 
   // Bind to keyboard shortcuts
   ctrl.searchInput.on('keydown', function(e) {
 
     var key = e.which;
+
+    if(key === KEY.TAB) {
+        ctrl.select();
+      }
 
     if (~[KEY.ENTER,KEY.ESC].indexOf(key)){
       e.preventDefault();
@@ -956,7 +953,7 @@ uis.controller('uiSelectCtrl',
 				  if (newItem) ctrl.select(newItem, true);
 			  });
 		  }
-      }
+      } 
 
     });
 
@@ -968,7 +965,20 @@ uis.controller('uiSelectCtrl',
       e.preventDefault();
       e.stopPropagation();
     }
+  });
 
+  ctrl.searchInput.on('blur', function() {
+		  if ( ctrl.allowFree.isActivated && ctrl.search.length > 0 ) {
+			  $timeout(function() {
+				  ctrl.searchInput.triggerHandler('tagged');
+				  var newItem = ctrl.search.trim();
+				  var fct = ctrl.tagging.fct || ctrl.allowFree.fct;
+				  if ( fct ) {
+					  newItem = fct( newItem );
+				  }
+				  if (newItem) ctrl.select(newItem, true);
+			  });
+		  }
   });
 
   ctrl.searchInput.on('paste', function (e) {
