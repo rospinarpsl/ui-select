@@ -385,7 +385,7 @@ uis.controller('uiSelectCtrl',
         // if click is made on existing item, prevent from tagging, ctrl.search does not matter
 		  var evtType = $event ? $event.type : '';
         ctrl.clickTriggeredSelect = false;
-        if((evtType === 'click' || evtType === 'touchend') && item)
+        if((evtType === 'click' || evtType === 'touchend' || evtType === 'mousedown') && item)
           ctrl.clickTriggeredSelect = true;
 
         if((ctrl.tagging.isActivated || ctrl.allowFree.isActivated) && ctrl.clickTriggeredSelect === false && evtType !== 'clear') {
